@@ -1,9 +1,14 @@
+%--------------------------------------------------------------------------
+% Script Name : traceSkel.m
+% Authors     : Felix Maurer
+% Institution : Saarland University
+% Email       : mail@felixmilanmaurer.com
+% Date        : 2024
+%
+% Description :
+%   This function traces skeletons of binary images and returns the lines
+%   in a struct.
 function lines = traceSkel(skelBW)
-%skelBW = bwskel(imbinarize(image(:,:,1)));
-
-
-%function lines = traceSkel(skelBW)
-% find points of neighbors 3 meaning bifurcation center
 numberNeighboringPixels = 3;
 lut = makelut(@(x)sum(x(:))>=(numberNeighboringPixels+1),3);
 lutBW = bwlookup(skelBW,lut) & skelBW;
@@ -13,7 +18,6 @@ bifPos = [stats.Centroid];
 skelBWTrace = skelBW;
 bifX = bifPos(1:2:end);
 bifY = bifPos(2:2:end);
-
 for bifIdx = 1:length(bifX)
     for idx1 = -1:1
         for idx2 = -1:1
@@ -21,7 +25,6 @@ for bifIdx = 1:length(bifX)
         end
     end
 end
-
 % find points of neighbors 1 meaning open end
 numberNeighboringPixels = 1;
 lut = makelut(@(x)sum(x(:))==(numberNeighboringPixels+1),3);
@@ -90,65 +93,9 @@ for statsIdx = 1:length(stats)
         % save
         linePoints = [linePoints;cPnt];
     end
-    %plot(linePoints(:,1),linePoints(:,2),'.')
     lines(statsIdx).pnts = flip(linePoints,2);
 end
-
-
-% clear lines; k_lines = 1;
-% for endPntIdx = 1:size(endPnt,1)
-%     skelDistPnts = skelPnts;
-%     % allocate
-%     lines(k_lines).pnts = [];
-%     thisEndPnt = endPnt(endPntIdx,:);
-%     cPnt = thisEndPnt;
-%     % check if end point is already part of line
-%     exclude = false;
-%     for lineIdx = 1:k_lines-1
-%         if ~isempty(lines(lineIdx).pnts)
-%             relVec =  round(lines(lineIdx).pnts)  -   round(cPnt) ;
-%             dists = sqrt(relVec(:,1).^2+relVec(:,2).^2);
-%             if ~isempty(find(dists<1.6,1))
-%                 exclude = true;
-%             end
-%         end
-%     end
-%     if ~exclude
-%         distVec = cPnt-skelDistPnts;
-%         dists = sqrt(distVec(:,1).^2+distVec(:,2).^2);
-%         pntIdx = find(dists==min(dists),1,'first');
-%         % take ot this point
-%         cond = ones(1,size(skelDistPnts,1),'logical');
-%         cond(pntIdx) = 0;
-%         skelDistPnts = skelDistPnts(cond,:);
-%         % save
-%         lines(k_lines).pnts = [lines(k_lines).pnts;cPnt];
-%         k_nn = 0;
-%         midPnt = thisEndPnt;
-%         midPntIdx = 8;
-%         minDist = 1;
-%         while minDist < 1.5
-%             k_nn = k_nn+1;
-%             distVec = cPnt-skelDistPnts;
-%             dists = sqrt(distVec(:,1).^2+distVec(:,2).^2);
-%             minDist = min(dists);
-%             pntIdx = find(dists==min(dists),1,'first');
-%             % determine new point
-%             cPnt = skelDistPnts(pntIdx,:);
-%             % take ot this point
-%             cond = ones(1,size(skelDistPnts,1),'logical');
-%             cond(pntIdx) = 0;
-%             skelDistPnts = skelDistPnts(cond,:);
-%             % save
-%             lines(k_lines).pnts = [lines(k_lines).pnts;cPnt];
-%         end
-%         k_lines = k_lines+1;
-%     end
-% end
-%imshow(skelBWTrace)
-%hold on
- for lineIdx = 1:length(lines)
-     pnts = lines(lineIdx).pnts;
-    % plot(pnts(:,1),pnts(:,2),'color',[lineIdx/length(lines) 0 1-lineIdx/length(lines)],'Marker','.','LineStyle','none','MarkerSize',20);
- end
+for lineIdx = 1:length(lines)
+    pnts = lines(lineIdx).pnts;
+end
 end

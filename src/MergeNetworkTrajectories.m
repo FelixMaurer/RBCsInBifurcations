@@ -1,9 +1,26 @@
-%% General
-% this program takes trajectory clusters and merges them
-% networkPC3D.m >> MergeNetworkTrajectories.m
-%clear all; close all; clc;
+%--------------------------------------------------------------------------
+% Script Name : MergeNetWorkTrajectories
+% Authors     : Felix Maurer
+% Institution : Saarland University
+% Email       : mail@felixmilanmaurer.com
+% Date        : 2024
+%
+% Description :
+%   This is a helper script to collect all trajectories from a series 
+%   of videos recorded at the same position and merge them into one struct.
+%
+% Usage :
+%
+% Dependencies :
+%
+% Reference :
+%   This script is associated with the publication
+%   Impact of Red Blood Cell Rigidity on in vivo Flow Dynamics and Lingering in Bifurcations
+%   by Rashidi et al. 2025
+% License :
+%   MIT
 %% File Loop
-cellTypes = {'RBC','WBC'};
+cellTypes = {'Healthy_RBCs','Rigid_RBCs'};
 clear trajfiles; k_trajfile = 1;
 for IDXtype = 1:2
     cFolder = [rootDir '\' cellTypes{IDXtype}];
