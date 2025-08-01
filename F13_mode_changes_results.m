@@ -20,10 +20,13 @@
 % License :
 %   MIT
 %% file declarations
-filelist = dir(fullfile('G:/invivo_data/a10mM/**/bifTrajModes.mat'));
+rootDir = char(readlines("directory.txt"));
+filelist = dir(fullfile([rootDir,'\**\bifTrajModes.mat']));
 folders = {filelist.folder};
 folders = unique(folders);
-%%
+%% source
+addpath('src');
+%% processing
 HRBCthres = 2;
 RRBCthres = 2;
 zPositions = 0;
@@ -145,8 +148,8 @@ linewidth = 1;
 for pntIdx = 1:length(xData)
     xVal = xData(pntIdx);
     yVal = yData(pntIdx);
-    scale = abs(xData-yData);dist = -(xVal-yVal)/sqrt(2)/mean(abs(scale(~isnan(scale))));%)-(xVal-yVal)/sqrt(2)/mean(abs(xData-yData));%)-10*(xVal-yVal)/sqrt(2)/mean(abs(xData-yData));%)-100*(xVal-yVal)/sqrt(2)/mean(abs(xData-xData));%)-100*(xVal-yVal)/sqrt(2)/mean(abs(xVal-yVal));%)-10*(xVal-yVal)/sqrt(2)/mean(abs(xVal-yVal));%)-(xVal-yVal)/sqrt(2)/mean(abs(xVal-yVal));%)-(xVal-yVal)/sqrt(2)/(mean(abs(xVal-yVal));%)mean(abs(xVal-yVal));%mean(abs(xVal-yVal));%-(xVal-yVal)/sqrt(2);
-    scale = abs(xData-yData);dist = -(xVal-yVal)/sqrt(2)/mean(abs(scale(~isnan(scale))));%)-(xVal-yVal)/sqrt(2)/mean(abs(xData-yData));%)-10*(xVal-yVal)/sqrt(2)/mean(abs(xData-yData));%)-100*(xVal-yVal)/sqrt(2)/mean(abs(xData-xData));%)-100*(xVal-yVal)/sqrt(2)/mean(abs(xVal-yVal));%)-10*(xVal-yVal)/sqrt(2)/mean(abs(xVal-yVal));%)-(xVal-yVal)/sqrt(2)/mean(abs(xVal-yVal));%)-(xVal-yVal)/sqrt(2)/(mean(abs(xVal-yVal));%)mean(abs(xVal-yVal));%mean(abs(xVal-yVal));%dist/50*250;
+    scale = abs(xData-yData);dist = -(xVal-yVal)/sqrt(2)/mean(abs(scale(~isnan(scale))));
+    scale = abs(xData-yData);dist = -(xVal-yVal)/sqrt(2)/mean(abs(scale(~isnan(scale))));
     dist
     dist(isnan(dist)) = 0; pointColor = [smR(dist),smG(dist),smB(dist)];
     pointColor(pointColor>1)=1;

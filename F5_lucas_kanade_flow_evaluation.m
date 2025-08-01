@@ -96,8 +96,8 @@ for rootIdx = 1:length(rootFolders)
     
     suffix = 'LK_scale';
     % save data
-    save([rootdir(1:end-length('converted_expo')),'velocity_magnitude_' suffix '.mat'],'Vs');
-    save([rootdir(1:end-length('converted_expo')),'velocity_direction_' suffix '.mat'],'angles');
+    save([rootdir,'\velocity_magnitude_' suffix '.mat'],'Vs');
+    save([rootdir,'\velocity_direction_' suffix '.mat'],'angles');
 
     %% plotting
     close all;
@@ -130,7 +130,7 @@ for rootIdx = 1:length(rootFolders)
     ax.Position(3) = ax.Position(4) * size(wallBW,2)/size(wallBW,1);
 
     % saving
-    print([rootdir,'\','velocity_magnitude_traj' suffix '.png'],'-dpng','-r600');
+    print([rootdir,'\','velocity_magnitude_' suffix '.png'],'-dpng','-r600');
 
     % make angle colormap
     Nc = 6*32;

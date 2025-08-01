@@ -25,6 +25,9 @@
 %   MIT
 %% source
 addpath('src');
+%% settings
+% plot for debugging
+flag_plot_positions = false;
 %% find files
 % parent dir
 rootDir = char(readlines('directory.txt'));
@@ -37,10 +40,10 @@ for plasmaFileIdx = 1:length(plasmaImgFiles)
     plasmaFilePath = [plasmaFileFolder,'\',plasmaFileName];
     % find align images
     clear alignFiles;
-    alignFiles(1).files = dir(fullfile([plasmaFileFolder '\Healthy RBCs\*_offset.png']));
-    alignFiles(2).files = dir(fullfile([plasmaFileFolder '\Rigid RBCs\*_offset.png']));
-    alignFiles(1).peakFiles = dir(fullfile([plasmaFileFolder '\Healthy RBCs\*_peaks_img.png']));
-    alignFiles(2).peakFiles = dir(fullfile([plasmaFileFolder '\Rigid RBCs\*_peaks_img.png']));
+    alignFiles(1).files = dir(fullfile([plasmaFileFolder '\Healthy_RBCs\*_offset.png']));
+    alignFiles(2).files = dir(fullfile([plasmaFileFolder '\Rigid_RBCs\*_offset.png']));
+    alignFiles(1).peakFiles = dir(fullfile([plasmaFileFolder '\Healthy_RBCs\*_peaks_img.png']));
+    alignFiles(2).peakFiles = dir(fullfile([plasmaFileFolder '\Rigid_RBCs\*_peaks_img.png']));
     for typeIdx = 1:2
         % read plasma image
         plasmaImg = im2gray(imread(plasmaFilePath));
@@ -59,10 +62,14 @@ for plasmaFileIdx = 1:length(plasmaImgFiles)
                 return
             end
             % read align offset image
-            offImg = im2gray(imread(filePath));
+            offImg = imread(filePath);
             % binarize
             bwRefImg = imbinarize(refImg);
-            bwOffImg = imbinarize(offImg);
+            if length(size(offImg)) > 2 % assume blue rectangle
+                bwOffImg = imbinarize(offImg(:,:,2)-offImg(:,:,1));
+            else
+                bwOffImg = imbinarize(offImg);
+            end
             % find center of mass
             stats = regionprops(bwRefImg,'centroid');
             refPos = stats.Centroid(1:2);

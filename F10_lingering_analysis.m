@@ -24,13 +24,14 @@ flag_plotting = false;
 %% source
 addpath('src');
 %% file loop
-flag_analyze = false;
+% analyze or skip and load previous analysis
+flag_analyze = true;
 if flag_analyze
     cellTypes = {'Healthy_RBCs','Rigid_RBCs'};
     % find data directories
     maskName = 'Mask.png';
-    parentDir = pwd;
-    allDirList = dir(fullfile([parentDir(1:end-5),'\**\Mask.png']));
+    parentDir = char(readlines('directory.txt'));
+    allDirList = dir(fullfile([parentDir,'\**\Mask.png']));
 
     % mother velocities
     allHRBCVelMoth = [];
@@ -101,7 +102,6 @@ if flag_analyze
         clear allClusters;
         clusters_from_network_tracking = true;
         if clusters_from_network_tracking
-            cellTypes = {'Healthy_RBCs','Rigid_RBCs'};
             frameRates = [50,100];
             cellTypeIdc = [1,2];
             for cellTypeIdx = cellTypeIdc
@@ -519,6 +519,8 @@ if flag_analyze
                         end
                     end
                 end
+            catch ME
+                disp(ME.message);
             end
         end % end of bifurcation loop
         hold off;
@@ -526,7 +528,7 @@ if flag_analyze
         saveNameMotherDet = strrep(saveNameMotherDet,'\','-');
         saveNameMotherDet = strrep(saveNameMotherDet,':','-');
         saveNameMotherDet = saveNameMotherDet(1:end-4);
-        print(sprintf('%s-BIF%d-mother_detection.png',saveNameMotherDet,bifIdx),'-dpng','-r300');
+        print(sprintf('img-%s-BIF%d-mother_detection.png',saveNameMotherDet,bifIdx),'-dpng','-r300');
         close all;
 
         save([rootDir,'\bifLin.mat'],"bifurcations");
@@ -593,10 +595,10 @@ yErr = ErrallHRBCVelMoth;
 xErr(isnan(xErr)) = median(xErr,'omitnan');
 yErr(isnan(yErr)) = median(yErr,'omitnan');
 
-cond = ~isinf(xData)&~isnan(yData)&~isinf(xData)&~isnan(yData);
+cond = ~isinf(xData)&~isinf(yData)&~isnan(xData)&~isnan(yData);
 
 xData = xData(cond);
-yData = yData(cond);
+yData = yData(cond); if isempty(xData) || isempty(yData), error('x- or y-data empty'), end, if length(xData)<3 || length(yData)<3, error('not enough data points'), end
 xErr = xErr(cond);
 yErr = yErr(cond);
 
@@ -666,13 +668,12 @@ yErr = ErrallHRBCVelDaugh;
 xErr(isnan(xErr)) = median(xErr,'omitnan');
 yErr(isnan(yErr)) = median(yErr,'omitnan');
 
-cond = ~isinf(xData)&~isnan(yData)&~isinf(xData)&~isnan(yData);
+cond = ~isinf(xData)&~isinf(yData)&~isnan(xData)&~isnan(yData);
 
 xData = xData(cond);
-yData = yData(cond);
+yData = yData(cond); if isempty(xData) || isempty(yData), error('x- or y-data empty'), end, if length(xData)<3 || length(yData)<3, error('not enough data points'), end
 xErr = xErr(cond);
 yErr = yErr(cond);
-
 
 axLims = [0 max([xData,yData])];
 axLims = [0 1000];
@@ -740,10 +741,10 @@ yErr = ErrallHRBCVelBif;
 xErr(isnan(xErr)) = median(xErr,'omitnan');
 yErr(isnan(yErr)) = median(yErr,'omitnan');
 
-cond = ~isinf(xData)&~isnan(yData)&~isinf(xData)&~isnan(yData);
+cond = ~isinf(xData)&~isinf(yData)&~isnan(xData)&~isnan(yData);
 
 xData = xData(cond);
-yData = yData(cond);
+yData = yData(cond); if isempty(xData) || isempty(yData), error('x- or y-data empty'), end, if length(xData)<3 || length(yData)<3, error('not enough data points'), end
 xErr = xErr(cond);
 yErr = yErr(cond);
 
@@ -818,7 +819,7 @@ yErr(isnan(yErr)) = median(yErr,'omitnan');
 cond = ~isnan(xData)&~isnan(yData)&~isinf(xData)&~isinf(yData);
 
 xData = xData(cond);
-yData = yData(cond);
+yData = yData(cond); if isempty(xData) || isempty(yData), error('x- or y-data empty'), end, if length(xData)<3 || length(yData)<3, error('not enough data points'), end
 xErr = xErr(cond);
 yErr = yErr(cond);
 
@@ -903,7 +904,7 @@ yErr(isnan(yErr)) = median(yErr,'omitnan');
 cond = ~isnan(xData)&~isnan(yData)&~isinf(xData)&~isinf(yData);
 
 xData = xData(cond);
-yData = yData(cond);
+yData = yData(cond); if isempty(xData) || isempty(yData), error('x- or y-data empty'), end, if length(xData)<3 || length(yData)<3, error('not enough data points'), end
 xErr = xErr(cond);
 yErr = yErr(cond);
 
@@ -991,7 +992,7 @@ xErr = xErr(cond);
 yErr = yErr(cond);
 
 xData = xData(cond);
-yData = yData(cond);
+yData = yData(cond); if isempty(xData) || isempty(yData), error('x- or y-data empty'), end, if length(xData)<3 || length(yData)<3, error('not enough data points'), end
 
 axLims = [min([xData,yData]) max([xData,yData])];
 axLims = [-750,750];
@@ -1075,7 +1076,7 @@ xErr = xErr(cond);
 yErr = yErr(cond);
 
 xData = xData(cond);
-yData = yData(cond);
+yData = yData(cond); if isempty(xData) || isempty(yData), error('x- or y-data empty'), end, if length(xData)<3 || length(yData)<3, error('not enough data points'), end
 
 axLims = [min([xData,yData]) max([xData,yData])];
 axLims = [0,5];

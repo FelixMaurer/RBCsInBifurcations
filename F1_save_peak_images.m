@@ -39,8 +39,8 @@ for fileIdx = 1:length(filelist)
     fileFolder = filelist(fileIdx).folder;
     fileName = filelist(fileIdx).name;
     filePath = [fileFolder '\' fileName];
-    if contains(fileFolder(end-3:end),cellTypes)>0
-        if conatins(fileFolder,cellTypes{1})
+    if contains(fileFolder,cellTypes)>0
+        if contains(fileFolder,cellTypes{1})
             cellColor = [1 0.4 0];
             colorStr = 'red';
         else

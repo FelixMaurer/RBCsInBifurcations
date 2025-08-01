@@ -48,7 +48,7 @@ addpath('src\SLMtools\');
 clc;
 maskName = 'Mask.png';
 rootDir = char(readlines('directory.txt'));
-dist = 2; % increase to make curves steeper / increase angle, should be less then 45°
+dist = 10; % increase to make curves steeper / increase angle, should be less then 45°
 cellTypes = {'Healthy_RBCs','Rigid_RBCs'};
 for minDistance = 20
     for idxType = 1:2
@@ -85,7 +85,7 @@ for minDistance = 20
                     %% load alignment
                     alignVec = [0 0];
                     try
-                        load([filePath(1:end-4) '_alignVec.mat']);
+                        load([filePath(1:end-4) '_peaks_img_offset_alignVec.mat']);
                     catch
                         fprintf('loading of alignment for %s failed.\n',filePath(1:end-4))
                     end

@@ -19,9 +19,11 @@
 %   by Rashidi et al. 2025
 % License :
 %   MIT
+%% source
+addpath('src');
 %% file processing
-parentDir = pwd;
-allDirList = dir(fullfile([parentDir(1:end-5),'\**\bifTrajModes.mat']));
+rootDir = char(readlines("directory.txt"));
+allDirList = dir(fullfile([rootDir,'\**\bifTrajModes.mat']));
 allDirList = {allDirList.folder};
 %microScale = 0.65; % in case units are microns
 microScale = 1; % units are pixels
@@ -95,6 +97,7 @@ xErr(isnan(xErr)) = median(xErr,'omitnan');
 yErr(isnan(yErr)) = median(yErr,'omitnan');
 
 cond = ~isinf(xData)&~isnan(yData)&~isinf(xData)&~isnan(yData);
+%cond = xData <0.5 & yData < 0.5;
 
 xData = xData(cond);
 yData = yData(cond);
@@ -137,8 +140,8 @@ for pntIdx = 1:length(xData)
     errorbar(xData(pntIdx),yData(pntIdx),yErr(pntIdx),yErr(pntIdx),xErr(pntIdx),xErr(pntIdx),'s','color',pointColor,'MarkerSize',6,'MarkerFaceColor','none','MarkerEdgeColor','none','LineWidth',linewidth)
     s = scatter(xData(pntIdx),yData(pntIdx),20,'color',pointColor,'Marker','o','MarkerFaceColor',pointColor,'MarkerFaceAlpha',0.2,'MarkerEdgeColor',pointColor);
 end
-xlh = xlabel(['\fontname{cmss10}F_{\fontname{mwa_cmmi10}R}^{\fontname{cmss10}int}\fontname{cmss10}']);%,'Interpreter','tex')
-ylh = ylabel(['\fontname{cmss10}F_{\fontname{mwa_cmmi10}H}^{\fontname{cmss10}int}\fontname{cmss10}']);%,'Interpreter','tex')
+xlh = xlabel(['\fontname{cmss10}F_{\fontname{mwa_cmmi10}R}^{\fontname{cmss10}apex}\fontname{cmss10}']);%,'Interpreter','tex')
+ylh = ylabel(['\fontname{cmss10}F_{\fontname{mwa_cmmi10}H}^{\fontname{cmss10}apex}\fontname{cmss10}']);%,'Interpreter','tex')
 xline([2,5])
 yline([2,5])
 signRankTestLine;

@@ -50,7 +50,7 @@ for rootIdx = 1:length(rootFolders)
     end
     
     % Search and load velocity_magnitude_traj.mat
-    vel_file1 = dir(fullfile(rootDir, '**', '*velocity_magnitude_traj.mat'));
+    vel_file1 = dir(fullfile(rootDir,'*velocity_magnitude_traj.mat'));
     if ~isempty(vel_file1)
         load(fullfile(vel_file1(1).folder, vel_file1(1).name));
         Vs1 = Vs;
@@ -59,7 +59,7 @@ for rootIdx = 1:length(rootFolders)
     end
     
     % Search and load velocity_magnitude_LK_scale.mat
-    vel_file2 = dir(fullfile(rootDir, '**', '*velocity_magnitude_LK_scale.mat'));
+    vel_file2 = dir(fullfile(rootDir, '*velocity_magnitude_LK_scale.mat'));
     if ~isempty(vel_file2)
         load(fullfile(vel_file2(1).folder, vel_file2(1).name));
         Vs2 = Vs;
@@ -68,16 +68,15 @@ for rootIdx = 1:length(rootFolders)
     end
 
     % Search and load velocity_direction_traj.mat
-    agl_file1 = dir(fullfile(rootDir, '**', '*velocity_direction_traj.mat'));
+    agl_file1 = dir(fullfile(rootDir, '*velocity_direction_traj.mat'));
     if ~isempty(agl_file1)
         load(fullfile(agl_file1(1).folder, agl_file1(1).name));
         angle1 = angles;
     else
         error('velocity_direction_traj.mat not found');
     end
-    
     % Search and load velocity_direction_LK_scale.mat
-    agl_file2 = dir(fullfile(rootDir, '**', '*velocity_direction_LK_scale.mat'));
+    agl_file2 = dir(fullfile(rootDir, '*velocity_direction_LK_scale.mat'));
     if ~isempty(agl_file2)
         load(fullfile(agl_file2(1).folder, agl_file2(1).name));
         angle2 = angles;
@@ -203,7 +202,7 @@ for rootIdx = 1:length(rootFolders)
             vesBW = zeros(size(wallBW),'logical');
             [y,x] = find(unwrap);
             for pntIdx = 1:length(x)
-                if x(pntIdx) > bifPos
+                if 1%x(pntIdx) > bifPos
                     imgPnt = round(pnts(x(pntIdx),:) + normals(x(pntIdx),:) * (-size(unwrap,1)/2+y(pntIdx)));
                     if inbounds(vesBW,imgPnt(1),imgPnt(2))
                         vesBW(imgPnt(1),imgPnt(2)) = 1;
@@ -213,6 +212,7 @@ for rootIdx = 1:length(rootFolders)
             % fill
             vesBW = bwmorph(vesBW,'close');
             vesBW = (vesBW - allBifBW)>0;
+            vesBW = bwareaopen(vesBW,20);
             stats = regionprops(vesBW,'Area','PixelList');
             [~,sortIdc] = sort([stats.Area]);
             sortIdc = flip(sortIdc);
@@ -235,6 +235,10 @@ for rootIdx = 1:length(rootFolders)
                     flow = [flow,Vs(x(pntIdx),y(pntIdx))];
                     angle = [angle,angles(x(pntIdx),y(pntIdx))];
                 end
+            end
+            if isempty(flow)
+                %imshow(vesBW)
+                error('vessel empty');
             end
             flowSelIdc = flow>prctile(flow,10);
             flow = flow(flowSelIdc);

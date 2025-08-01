@@ -32,14 +32,13 @@ timer = tic;
 suffix = '_traj';
 for rootIdx = 1:length(rootFolders)
     rootdir = rootFolders{rootIdx};
-    rootdir = rootdir(1:end-length('\converted_expo'));
     % display
     fprintf('working on -> %s\n',rootdir);
     % load geometry
-    load([rootdir,'\converted_expo\geometry\bifurcations.mat']);
+    load([rootdir,'\geometry\bifurcations.mat']);
 
     % extract ROI boundaries
-    wallImg = imread([rootdir '\converted_expo\',maskName]);
+    wallImg = imread([rootdir,'\',maskName]);
     if length(size(wallImg)) > 2
         wallImg = wallImg(:,:,1);
     end
@@ -241,7 +240,7 @@ for rootIdx = 1:length(rootFolders)
         ax.Position(3) = ax.Position(4) * size(wallBW,2)/size(wallBW,1);
 
         % saving
-        print([rootdir,'\converted_expo\','velocity_magnitude' suffix '.png'],'-dpng','-r600');
+        print([rootdir,'\','velocity_magnitude' suffix '.png'],'-dpng','-r600');
 
         % make angle colormap
         Nc = 6*32;
@@ -306,7 +305,7 @@ for rootIdx = 1:length(rootFolders)
         ax.Position(3) = ax.Position(4) * size(wallBW,2)/size(wallBW,1);
 
         % saving
-        print([rootdir,'\converted_expo\','velocity_direction' suffix '.png'],'-dpng','-r600');
+        print([rootdir,'\','velocity_direction' suffix '.png'],'-dpng','-r600');
 
         % status
         time = toc(timer);

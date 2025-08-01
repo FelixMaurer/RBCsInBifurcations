@@ -20,7 +20,7 @@
 % License :
 %   MIT
 rootDir = char(readlines('directory.txt'));
-filelist = dir(fullfile([rootDir,'**','bifTraj.mat']));
+filelist = dir(fullfile([rootDir,'\**\','bifTraj.mat']));
 folders = {filelist.folder};
 folders = unique(folders);
 %%
@@ -62,9 +62,7 @@ for rootIdx = 1:length(folders)
         bifDaughBounds = bwboundaries(bifDaugh);
         bifDaughBounds = bifDaughBounds{1};
         %% HRBCs
-        rolThres = cBif.avgHRBCvel/4.7*2;
-        rolThres = mean([cBif.conVesBdy.HRBCVel],'omitnan')./cBif(1).velScaleHRBC*0.3;
-        
+        intThres = mean([cBif.conVesBdy.HRBCVel],'omitnan')./cBif(1).velScaleHRBC*0.3;
         figure;
         imshow(bifBW);
         hold on
@@ -83,15 +81,15 @@ for rootIdx = 1:length(folders)
                 medVel = median(vel(~isnan(vel)));
                 vel(isnan(vel)) = medVel;
                 HRBCVel = [HRBCVel,medVel];
-                rolCond = vel < rolThres;
-                rolCond = logical(hampel(double(rolCond),3));
-                rolCond = logical(round(movmean(double(rolCond),4)));
+                intCond = vel < intThres;
+                intCond = logical(hampel(double(intCond),3));
+                intCond = logical(round(movmean(double(intCond),4)));
                 trajMode = 0;
-                if sum(rolCond) > floor(length(rolCond)/3)
+                if sum(intCond) > floor(length(intCond)/3)
                     trajMode = 1;
                 end
                 HRBCModes = [HRBCModes,trajMode];
-                modeCh = diff(rolCond);
+                modeCh = diff(intCond);
                 modeChIdc = find(modeCh ~= 0);
                 if ~isempty(modeChIdc)
                     chIdc = [chIdc,HRBCidx];
@@ -99,27 +97,27 @@ for rootIdx = 1:length(folders)
                     if ismember(k_Traj,[1 5 6 10 11])
                         offset = -min(pnts(:,3))+sum(zPositions);
                         zPositions = [zPositions,max(pnts(:,3))-min(pnts(:,3))];
-                        firstMode = double(rolCond(1));
+                        firstMode = double(intCond(1));
                         numFlo = sum(modeCh < 0) + double(firstMode==0);
                         numRol = sum(modeCh > 0) + double(firstMode==1);
 
                         floInts = zeros(numFlo,2);
-                        rolInts = zeros(numRol,2);
+                        interactionInts = zeros(numRol,2);
                         modeChIdc = [0;modeChIdc;length(modeCh)+1];
 
-                        k_rol = 1;
+                        k_int = 1;
                         k_flo = 1;
                         for chIdx = 1:length(modeChIdc)-1
-                            if rolCond(modeChIdc(chIdx)+1)
-                                rolInts(k_rol,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
-                                k_rol = k_rol + 1;
+                            if intCond(modeChIdc(chIdx)+1)
+                                interactionInts(k_int,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
+                                k_int = k_int + 1;
                             else
                                 floInts(k_flo,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
                                 k_flo = k_flo + 1;
                             end
                         end
-                        for intIdx = 1:size(rolInts,1)
-                            intPnts = pnts(rolInts(intIdx,1):rolInts(intIdx,2),:);
+                        for intIdx = 1:size(interactionInts,1)
+                            intPnts = pnts(interactionInts(intIdx,1):interactionInts(intIdx,2),:);
                             plot3(intPnts(:,2),intPnts(:,1),intPnts(:,3)+offset,'-','color',[0.2 0.6 0.4],'LineWidth',1.3);
                         end
                         for intIdx = 1:size(floInts,1)
@@ -127,10 +125,10 @@ for rootIdx = 1:length(folders)
                             plot3(intPnts(:,2),intPnts(:,1),intPnts(:,3)+offset,'-','color',[0.2 0.3 0.7],'LineWidth',1.3);
                         end
                         % transition points
-                        rolChIdc = find(modeCh > 0);
+                        intChIdc = find(modeCh > 0);
                         floChIdc = find(modeCh < 0);
-                        for chIdx = 1:size(rolChIdc,1)
-                            chPnts = pnts(rolChIdc(chIdx):rolChIdc(chIdx)+1,:);
+                        for chIdx = 1:size(intChIdc,1)
+                            chPnts = pnts(intChIdc(chIdx):intChIdc(chIdx)+1,:);
                             plot3(chPnts(:,2),chPnts(:,1),chPnts(:,3)+offset,'o-','color',[0.7 0.3 0.3],'MarkerFaceColor',[0.7 0.3 0.3]);
                         end
                         for chIdx = 1:size(floChIdc,1)
@@ -146,12 +144,10 @@ for rootIdx = 1:length(folders)
         hold off
         title('HRBC')
         bifurcations(bifIdx).HRBCMode = HRBCModes;
-        bifurcations(bifIdx).HRBCModeThres = rolThres;
+        bifurcations(bifIdx).HRBCModeThres = intThres;
 
         %% RRBCs
-        rolThres = cBif.avgRRBCvel/4.7*2;
-        cBif.conVesBdy.HRBCVel
-        rolThres = mean([cBif.conVesBdy.RRBCVel],'omitnan')./cBif(1).velScaleRRBC*0.3;
+        intThres = mean([cBif.conVesBdy.RRBCVel],'omitnan')./cBif(1).velScaleRRBC*0.3;
 
         hold on
         k_Traj = 0;
@@ -169,17 +165,17 @@ for rootIdx = 1:length(folders)
                 medVel = median(vel(~isnan(vel)));
                 vel(isnan(vel)) = medVel;
                 RRBCVel = [RRBCVel,medVel];
-                rolCond = vel < rolThres;
-                rolCond = logical(hampel(double(rolCond),3));
-                rolCond = logical(round(movmean(double(rolCond),4)));
+                intCond = vel < intThres;
+                intCond = logical(hampel(double(intCond),3));
+                intCond = logical(round(movmean(double(intCond),4)));
                 %%
                 trajMode = 0;
-                if sum(rolCond) > floor(length(rolCond)/3)
+                if sum(intCond) > floor(length(intCond)/3)
                     trajMode = 1;
                 end
                 RRBCModes = [RRBCModes,trajMode];
                 %%
-                modeCh = diff(rolCond);
+                modeCh = diff(intCond);
                 modeChIdc = find(modeCh ~= 0);
                 if ~isempty(modeChIdc)
                     chIdc = [chIdc,RRBCidx];
@@ -187,36 +183,36 @@ for rootIdx = 1:length(folders)
                     if ismember(k_Traj,[1 5 6 10 11])
                         offset = -min(pnts(:,3))+sum(zPositions);
                         zPositions = [zPositions,max(pnts(:,3))-min(pnts(:,3))];
-                        firstMode = double(rolCond(1));
+                        firstMode = double(intCond(1));
                         numFlo = sum(modeCh < 0) + double(firstMode==0);
                         numRol = sum(modeCh > 0) + double(firstMode==1);
 
                         floInts = zeros(numFlo,2);
-                        rolInts = zeros(numRol,2);
+                        interactionInts = zeros(numRol,2);
                         modeChIdc = [0;modeChIdc;length(modeCh)+1];
 
-                        k_rol = 1;
+                        k_int = 1;
                         k_flo = 1;
                         for chIdx = 1:length(modeChIdc)-1
-                            if rolCond(modeChIdc(chIdx)+1)
-                                rolInts(k_rol,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
-                                k_rol = k_rol + 1;
+                            if intCond(modeChIdc(chIdx)+1)
+                                interactionInts(k_int,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
+                                k_int = k_int + 1;
                             else
                                 floInts(k_flo,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
                                 k_flo = k_flo + 1;
                             end
                         end
-                        for intIdx = 1:size(rolInts,1)
-                            intPnts = pnts(rolInts(intIdx,1):rolInts(intIdx,2),:);
+                        for intIdx = 1:size(interactionInts,1)
+                            intPnts = pnts(interactionInts(intIdx,1):interactionInts(intIdx,2),:);
                         end
                         for intIdx = 1:size(floInts,1)
                             intPnts = pnts(floInts(intIdx,1):floInts(intIdx,2),:);
                         end
                         % transition points
-                        rolChIdc = find(modeCh > 0);
+                        intChIdc = find(modeCh > 0);
                         floChIdc = find(modeCh < 0);
-                        for chIdx = 1:size(rolChIdc,1)
-                            chPnts = pnts(rolChIdc(chIdx):rolChIdc(chIdx)+1,:);
+                        for chIdx = 1:size(intChIdc,1)
+                            chPnts = pnts(intChIdc(chIdx):intChIdc(chIdx)+1,:);
                         end
                         for chIdx = 1:size(floChIdc,1)
                             chPnts = pnts(floChIdc(chIdx):floChIdc(chIdx)+1,:);
@@ -230,7 +226,7 @@ for rootIdx = 1:length(folders)
         hold off
         title('RRBC')
         bifurcations(bifIdx).RRBCMode = RRBCModes;
-        bifurcations(bifIdx).RRBCModeThres = rolThres;
+        bifurcations(bifIdx).RRBCModeThres = intThres;
 
         %% more parameters
         RRBCModes = logical(RRBCModes);
@@ -248,8 +244,8 @@ for rootIdx = 1:length(folders)
         bifurcations(bifIdx).HRBCRolVel = HRBCRolVel;
 
         fprintf('----------------------------------------------------\n');
-        fprintf('%.2f percent healthy rol.\n',sum(HRBCModes)/length(HRBCModes)*100);
-        fprintf('%.2f percent rigid rol.\n',sum(RRBCModes)/length(RRBCModes)*100);
+        fprintf('%.2f percent healthy int.\n',sum(HRBCModes)/length(HRBCModes)*100);
+        fprintf('%.2f percent rigid int.\n',sum(RRBCModes)/length(RRBCModes)*100);
         fprintf('%.3f healthy flow vel.\n',mean(HRBCFloVel(~isnan(HRBCFloVel)&~isinf(HRBCFloVel))));
         fprintf('%.3f rigid flow vel.\n',mean(RRBCFloVel(~isnan(RRBCFloVel)&~isinf(RRBCFloVel))));
         fprintf('%.3f healthy flow vel / healthy vel\n',mean(HRBCFloVel(~isnan(HRBCFloVel)&~isinf(HRBCFloVel)))/mean(HRBCVel(~isnan(HRBCVel)&~isinf(HRBCVel))));
@@ -262,7 +258,7 @@ for rootIdx = 1:length(folders)
                 vesBounds = bwboundaries(vesBW);
                 vesBounds = vesBounds{1};
                 %% HRBCs
-                rolThres = conVes(vesIdx).HRBCVel/cBif.velScaleHRBC*2/4.7;
+                intThres = conVes(vesIdx).HRBCVel/cBif.velScaleHRBC*0.3;
                 %figure;
                 %imshow(bifBW);
                 hold on
@@ -281,15 +277,15 @@ for rootIdx = 1:length(folders)
                         medVel = median(vel(~isnan(vel)));
                         vel(isnan(vel)) = medVel;
                         HRBCVel = [HRBCVel,medVel];
-                        rolCond = vel < rolThres;
-                        rolCond = logical(hampel(double(rolCond),3));
-                        rolCond = logical(round(movmean(double(rolCond),4)));
+                        intCond = vel < intThres;
+                        intCond = logical(hampel(double(intCond),3));
+                        intCond = logical(round(movmean(double(intCond),4)));
                         trajMode = 0;
-                        if sum(rolCond) > floor(length(rolCond)/2)
+                        if sum(intCond) > floor(length(intCond)/2)
                             trajMode = 1;
                         end
                         HRBCModes = [HRBCModes,trajMode];
-                        modeCh = diff(rolCond);
+                        modeCh = diff(intCond);
                         modeChIdc = find(modeCh ~= 0);
                         if ~isempty(modeChIdc)
                             chIdc = [chIdc,HRBCidx];
@@ -297,27 +293,27 @@ for rootIdx = 1:length(folders)
                             if ismember(k_Traj,[1 5 6 10 11])
                                 offset = -min(pnts(:,3))+sum(zPositions);
                                 zPositions = [zPositions,max(pnts(:,3))-min(pnts(:,3))];
-                                firstMode = double(rolCond(1));
+                                firstMode = double(intCond(1));
                                 numFlo = sum(modeCh < 0) + double(firstMode==0);
                                 numRol = sum(modeCh > 0) + double(firstMode==1);
 
                                 floInts = zeros(numFlo,2);
-                                rolInts = zeros(numRol,2);
+                                interactionInts = zeros(numRol,2);
                                 modeChIdc = [0;modeChIdc;length(modeCh)+1];
 
-                                k_rol = 1;
+                                k_int = 1;
                                 k_flo = 1;
                                 for chIdx = 1:length(modeChIdc)-1
-                                    if rolCond(modeChIdc(chIdx)+1)
-                                        rolInts(k_rol,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
-                                        k_rol = k_rol + 1;
+                                    if intCond(modeChIdc(chIdx)+1)
+                                        interactionInts(k_int,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
+                                        k_int = k_int + 1;
                                     else
                                         floInts(k_flo,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
                                         k_flo = k_flo + 1;
                                     end
                                 end
-                                for intIdx = 1:size(rolInts,1)
-                                    intPnts = pnts(rolInts(intIdx,1):rolInts(intIdx,2),:);
+                                for intIdx = 1:size(interactionInts,1)
+                                    intPnts = pnts(interactionInts(intIdx,1):interactionInts(intIdx,2),:);
                                     %plot3(intPnts(:,2),intPnts(:,1),intPnts(:,3)+offset,'-','color',[0.2 0.6 0.4],'LineWidth',1.3);
                                 end
                                 for intIdx = 1:size(floInts,1)
@@ -325,10 +321,10 @@ for rootIdx = 1:length(folders)
                                     %plot3(intPnts(:,2),intPnts(:,1),intPnts(:,3)+offset,'-','color',[0.2 0.3 0.7],'LineWidth',1.3);
                                 end
                                 % transition points
-                                rolChIdc = find(modeCh > 0);
+                                intChIdc = find(modeCh > 0);
                                 floChIdc = find(modeCh < 0);
-                                for chIdx = 1:size(rolChIdc,1)
-                                    chPnts = pnts(rolChIdc(chIdx):rolChIdc(chIdx)+1,:);
+                                for chIdx = 1:size(intChIdc,1)
+                                    chPnts = pnts(intChIdc(chIdx):intChIdc(chIdx)+1,:);
                                     %plot3(chPnts(:,2),chPnts(:,1),chPnts(:,3)+offset,'o-','color',[0.7 0.3 0.3],'MarkerFaceColor',[0.7 0.3 0.3]);
                                 end
                                 for chIdx = 1:size(floChIdc,1)
@@ -344,10 +340,10 @@ for rootIdx = 1:length(folders)
                 hold off
                 title('HRBC')
                 conVes(vesIdx).HRBCMode = HRBCModes;
-                conVes(vesIdx).HRBCModeThres = rolThres;
+                conVes(vesIdx).HRBCModeThres = intThres;
                 conVes(vesIdx).HRBCVel = HRBCVel;
                 %% RRBCs
-                rolThres = conVes(vesIdx).RRBCVel/cBif.velScaleRRBC*2/4.7;
+                intThres = conVes(vesIdx).RRBCVel/cBif.velScaleRRBC*0.3;
                 hold on
                 k_Traj = 0;
                 chIdc = [];
@@ -364,17 +360,17 @@ for rootIdx = 1:length(folders)
                         medVel = median(vel(~isnan(vel)));
                         vel(isnan(vel)) = medVel;
                         RRBCVel = [RRBCVel,medVel];
-                        rolCond = vel < rolThres;
-                        rolCond = logical(hampel(double(rolCond),3));
-                        rolCond = logical(round(movmean(double(rolCond),4)));
+                        intCond = vel < intThres;
+                        intCond = logical(hampel(double(intCond),3));
+                        intCond = logical(round(movmean(double(intCond),4)));
                         %%
                         trajMode = 0;
-                        if sum(rolCond) > floor(length(rolCond)/2)
+                        if sum(intCond) > floor(length(intCond)/2)
                             trajMode = 1;
                         end
                         RRBCModes = [RRBCModes,trajMode];
                         %%
-                        modeCh = diff(rolCond);
+                        modeCh = diff(intCond);
                         modeChIdc = find(modeCh ~= 0);
                         if ~isempty(modeChIdc)
                             chIdc = [chIdc,RRBCidx];
@@ -382,27 +378,27 @@ for rootIdx = 1:length(folders)
                             if ismember(k_Traj,[1 5 6 10 11])
                                 offset = -min(pnts(:,3))+sum(zPositions);
                                 zPositions = [zPositions,max(pnts(:,3))-min(pnts(:,3))];
-                                firstMode = double(rolCond(1));
+                                firstMode = double(intCond(1));
                                 numFlo = sum(modeCh < 0) + double(firstMode==0);
                                 numRol = sum(modeCh > 0) + double(firstMode==1);
 
                                 floInts = zeros(numFlo,2);
-                                rolInts = zeros(numRol,2);
+                                interactionInts = zeros(numRol,2);
                                 modeChIdc = [0;modeChIdc;length(modeCh)+1];
 
-                                k_rol = 1;
+                                k_int = 1;
                                 k_flo = 1;
                                 for chIdx = 1:length(modeChIdc)-1
-                                    if rolCond(modeChIdc(chIdx)+1)
-                                        rolInts(k_rol,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
-                                        k_rol = k_rol + 1;
+                                    if intCond(modeChIdc(chIdx)+1)
+                                        interactionInts(k_int,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
+                                        k_int = k_int + 1;
                                     else
                                         floInts(k_flo,:) = [modeChIdc(chIdx)+1,modeChIdc(chIdx+1)];
                                         k_flo = k_flo + 1;
                                     end
                                 end
-                                for intIdx = 1:size(rolInts,1)
-                                    intPnts = pnts(rolInts(intIdx,1):rolInts(intIdx,2),:);
+                                for intIdx = 1:size(interactionInts,1)
+                                    intPnts = pnts(interactionInts(intIdx,1):interactionInts(intIdx,2),:);
                                     %plot3(intPnts(:,2),intPnts(:,1),intPnts(:,3)+offset,'-','color',[0.2 0.6 0.4],'LineWidth',1.3);
                                 end
                                 for intIdx = 1:size(floInts,1)
@@ -410,10 +406,10 @@ for rootIdx = 1:length(folders)
                                     %plot3(intPnts(:,2),intPnts(:,1),intPnts(:,3)+offset,'-','color',[0.2 0.3 0.7],'LineWidth',1.3);
                                 end
                                 % transition points
-                                rolChIdc = find(modeCh > 0);
+                                intChIdc = find(modeCh > 0);
                                 floChIdc = find(modeCh < 0);
-                                for chIdx = 1:size(rolChIdc,1)
-                                    chPnts = pnts(rolChIdc(chIdx):rolChIdc(chIdx)+1,:);
+                                for chIdx = 1:size(intChIdc,1)
+                                    chPnts = pnts(intChIdc(chIdx):intChIdc(chIdx)+1,:);
                                     %plot3(chPnts(:,2),chPnts(:,1),chPnts(:,3)+offset,'o-','color',[0.7 0.3 0.3],'MarkerFaceColor',[0.7 0.3 0.3]);
                                 end
                                 for chIdx = 1:size(floChIdc,1)
@@ -429,7 +425,7 @@ for rootIdx = 1:length(folders)
                 hold off
                 title('RRBC')
                 conVes(vesIdx).RRBCMode = RRBCModes;
-                conVes(vesIdx).RRBCModeThres = rolThres;
+                conVes(vesIdx).RRBCModeThres = intThres;
                 conVes(vesIdx).RRBCVel = RRBCVel;
             end
         end

@@ -1,0 +1,1 @@
+closeNoPrompt(matlab.desktop.editor.getAll);

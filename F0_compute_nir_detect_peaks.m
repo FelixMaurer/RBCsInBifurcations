@@ -71,6 +71,7 @@ for fileIdx = 1:length(filelist)
         vrd.CurrentTime = 0;
         nFrames = vrd.NumFrames;
         %% (1) write video into one array
+        STARTTIME = 0;
         TIMEINT = 3000;
         vrd.CurrentTime = STARTTIME;
         accframe = zeros(vrd.Height,vrd.Width,min(nFrames,TIMEINT*vrd.FrameRate),'uint16');
